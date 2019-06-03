@@ -10,7 +10,7 @@ All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export
 
   * Clone https://github.com/pytorch/pytorch; use a tag, preferably
   * Update submodules
-  * Use CMake to configure and generate binaries 
+  * Use CMake to configure and generate binaries: for Windows, use Visual Studio 2017 x64 as the generator from the GUI
   * An analogous command set in PowerShell or Bash is as follows:
   
 ```
