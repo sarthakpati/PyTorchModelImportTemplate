@@ -10,7 +10,7 @@ All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export
 
   * Clone https://github.com/pytorch/pytorch; use a tag, preferably
   * Update submodules
-  * Use CMake to configure and generate binaries: for Windows, use Visual Studio 2017 x64 as the generator from the GUI and add the variable **CMAKE_DEBUG_POSTFIX** as a **STRING** of value **d**
+  * Use CMake to configure and generate binaries: for Windows, use Visual Studio 2017 x64 as the generator from the GUI and add the variable **CMAKE_DEBUG_POSTFIX** as a **STRING** of value **d** (this makes linking against debug libs easier to maintain)
   * An analogous command set in PowerShell or Bash is as follows:
   
 ```
@@ -20,6 +20,8 @@ git submodule update --init --recursive # updates all submodules
 mkdir bin; cd bin
 cmake -DCMAKE_INSTALL_PREFIX=./install .. # this will use the default generator for the system
 ```
+
+  * Run the **INSTALL** target (either build that on VS or run `make install/strip` on bash)
 
 * ITK - for image I/O; can be replaced with something different, if needed
 
