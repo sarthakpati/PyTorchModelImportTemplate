@@ -2,7 +2,7 @@
 
 # Add all the files in here (or the full path of the directory) into cache so that they can be added as include files for applications
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/../cmake_modules/)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake_modules/)
 INCLUDE( CaPTk_macros )
 
 CAPTK_INITIAL_SETUP()

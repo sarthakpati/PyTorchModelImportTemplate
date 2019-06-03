@@ -6,6 +6,8 @@ All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export
 ## Depedencies
 * Python 3.6 from Anaconda - needed for PyTorch installation
 
+* CMake 3.12 (3.13 and 3.14 have a configuration change with superbuild that makes things a bit messy) - needed for PyTorch installation
+
 * PyTorch:
 
   * Clone https://github.com/pytorch/pytorch; use a tag, preferably
