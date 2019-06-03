@@ -4,6 +4,8 @@ An example shoowing how to import a PyTorch model and use it using C++
 All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export.html
 
 ## Depedencies
+* Python 3.6 from Anaconda - needed for PyTorch installation
+
 * PyTorch:
 
   * Clone https://github.com/pytorch/pytorch; use a tag, preferably
