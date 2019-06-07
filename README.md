@@ -4,18 +4,23 @@ An example shoowing how to import a PyTorch model and use it using C++
 All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export.html
 
 ## Depedencies
-* Python 3.6 from Anaconda - needed for PyTorch installation
 
-* CMake 3.12 (3.13 and 3.14 have a configuration change with superbuild that makes things a bit messy) - needed for PyTorch installation
+* Download LibTorch binaries:
+  * https://pytorch.org/get-started/locally/
 
-* PyTorch:
+* Build from Source
+  * Python 3.6 from Anaconda - needed for PyTorch installation
 
-  * Clone https://github.com/pytorch/pytorch; use a tag, preferably
-  * Update submodules
-  * Use CMake to configure and generate binaries.
-    * [WINDOWS USERS] use Visual Studio 2017 x64 as the generator from the GUI and add the variable **CMAKE_DEBUG_POSTFIX** as a **STRING** of value **d** (this makes linking against debug libs easier to maintain)
-  * Enable the following the flags **CAFFE2_STATIC_LINK_CUDA** and **TORCH_STATIC** and disable **BUILD_SHARED_LIBS** for static compiles 
-  * An analogous command set in PowerShell or Bash is as follows:
+  * CMake 3.12 (3.13 and 3.14 have a configuration change with superbuild that makes things a bit messy) - needed for PyTorch installation
+
+  * PyTorch:
+
+    * Clone https://github.com/pytorch/pytorch; use a tag, preferably
+    * Update submodules
+    * Use CMake to configure and generate binaries.
+      * [WINDOWS USERS] use Visual Studio 2017 x64 as the generator from the GUI and add the variable **CMAKE_DEBUG_POSTFIX** as a **STRING** of value **d** (this makes linking against debug libs easier to maintain)
+    * Enable the following the flags **CAFFE2_STATIC_LINK_CUDA** and **TORCH_STATIC** and disable **BUILD_SHARED_LIBS** for static compiles 
+    * An analogous command set in PowerShell or Bash is as follows:
   
 ```
 git clone https://github.com/pytorch/pytorch.git # use a tag, preferably
