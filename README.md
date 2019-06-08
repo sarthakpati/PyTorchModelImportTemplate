@@ -7,6 +7,8 @@ All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export
 
 * Download LibTorch binaries:
   * https://pytorch.org/get-started/locally/
+  * Add the path to the **cmake** folder from the extracted folder under the environment variable **CMAKE_PREFIX_PATH** (this will help CMake find Torch properly)
+    * [WINDOWS USERS] There is the option for Debug and Release libraries; you need to link to the appropriate one for your linker to work properly
 
 * Build from Source
   * Python 3.6 from Anaconda - needed for PyTorch installation
