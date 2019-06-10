@@ -10,21 +10,17 @@
 #include "itkCastImageFilter.h"
 
 
-std::string inputImage, outputDirectory, trainedModelDirectory;
+std::string inputImageFile, outputDirectory, trainedModelDirectory;
 
 float sigma = 0.5;
 
-typedef short                                 				PixelType;
-const unsigned int Dimension = 3;
-typedef itk::Image<PixelType, Dimension>      				ImageType;
-typedef itk::ImageFileReader<ImageType>       				ReaderType;
-typedef itk::ImageRegionIterator<ImageType> 			    IteratorType;
-using DefaultImageType = itk::Image< float, ImageType::ImageDimension >;
-using DefaultImageIteratorType = itk::ImageRegionIterator< DefaultImageType >;
-
 //! Convert an ITK Image to a Tensor image
-torch::Tensor itk2tensor(ImageType::Pointer itk_img) 
+template< class TImageType >
+torch::Tensor itk2tensor(TImageType::Pointer itk_img) 
 {
+  using DefaultImageType = itk::Image< float, TImageType::ImageDimension >;
+  using DefaultImageIteratorType = itk::ImageRegionIterator< DefaultImageType >;
+
   // always cast to float
   auto caster = itk::CastImageFilter< ImageType, DefaultImageType >::New();
   caster->SetInput(itk_img);
@@ -51,8 +47,12 @@ torch::Tensor itk2tensor(ImageType::Pointer itk_img)
 }
 
 //! Convert a Tensor Image to an ITK image
-ImageType::Pointer tensor2itk(torch::Tensor &t, ImageType::Pointer inputImage)
+template< class TImageType >
+typename TImageType::Pointer tensor2itk(torch::Tensor &t, typename TImageType::Pointer inputImage)
 {
+  using DefaultImageType = itk::Image< float, TImageType::ImageDimension >;
+  using DefaultImageIteratorType = itk::ImageRegionIterator< DefaultImageType >;
+
   std::cout << "tensor dtype = " << t.dtype() << std::endl;
   std::cout << "tensor size = " << t.sizes() << std::endl;
   t = t.toType(torch::kFloat);
@@ -64,7 +64,7 @@ ImageType::Pointer tensor2itk(torch::Tensor &t, ImageType::Pointer inputImage)
   auto start = inputImage->GetLargestPossibleRegion().GetIndex();
 
   // get size from tensor image 
-  ImageType::SizeType  size;
+  typename TImageType::SizeType  size;
   size[0] = t.size(2);
   size[1] = t.size(3);
   size[2] = t.size(4);
@@ -77,12 +77,12 @@ ImageType::Pointer tensor2itk(torch::Tensor &t, ImageType::Pointer inputImage)
     if (size_itk[d] != t.size(tensorCounter))
     {
       std::cerr << "ITK Image size and Tensor image size mismatch.\n";
-      return ImageType::New();
+      return typename TImageType::New();
     }
     tensorCounter++;
   }
 
-  ImageType::RegionType region;
+  typename TImageType::RegionType region;
   region.SetSize(size);
   region.SetIndex(start);
 
@@ -122,8 +122,20 @@ int main(int argc, const char* argv[])
   parser.addOptionalParameter("s", "sigma", cbica::Parameter::FLOAT, "0-1", "Some random parameter shown as example", "Defaults to " + std::to_string(sigma));
 
   parser.getParameterValue("m", trainedModelDirectory);
-  parser.getParameterValue("i", inputImage);
+  parser.getParameterValue("i", inputImageFile);
   parser.getParameterValue("o", outputDirectory);
+
+  // initialize the defaults for ITK to use, if needed
+  using DefaultPixelType = float;
+  using InputImageType = itk::Image< DefaultPixelType, 3 >;
+
+  auto inputImage = cbica::ReadImage< InputImageType >(inputImageFile);
+
+  // convert itk image to tensor
+  auto convertedTensor = itk2tensor< InputImageType >(inputImage);
+
+  // convert tensor image to itk
+  auto convertedItkImage = tensor2itk< InputImageType >(convertedTensor, inputImage);
 
   // Deserialize the ScriptModule from a file using torch::jit::load().
   auto module = torch::jit::load(trainedModelDirectory);
