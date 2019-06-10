@@ -1,0 +1,3 @@
+[submodule "src/cbica_toolkit"]
+	path = src/cbica_toolkit
+	url = https://github.com/CBICA/CBICA_Toolkit.git
