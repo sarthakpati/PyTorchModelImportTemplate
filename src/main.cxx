@@ -36,9 +36,11 @@ torch::Tensor itk2tensor(ImageType::Pointer itk_img)
 
   // convert array to tensor
   torch::Tensor tensor_img;
-  tensor_img = torch::from_blob(castedInput->GetBufferPointer(),
-    { 1, 1, (int)size[0], (int)size[1], (int)size[2] }, torch::kShort).clone();
-  tensor_img = tensor_img.toType(torch::kFloat);
+  tensor_img = torch::from_blob(
+    castedInput->GetBufferPointer(), // raw image pointer
+    { 1, 1, (int)size[0], (int)size[1], (int)size[2] }, // image size - I wonder how this would work for N-D images?
+    torch::kFloat).clone();
+  tensor_img = tensor_img.toType(torch::kFloat); // default pixel type being passed around will be float
 #if defined __CUDA_ARCH__
   //tensor_img = tensor_img.to(torch::kCUDA); // this doesn't seem to work, for whatever reason
 #endif
@@ -57,13 +59,28 @@ ImageType::Pointer tensor2itk(torch::Tensor &t, ImageType::Pointer inputImage)
   auto array = t.data< DefaultImageType::PixelType >();
 
   DefaultImageType::Pointer returnCastedImage;
-
+  
+  // get starting index of input image 
   auto start = inputImage->GetLargestPossibleRegion().GetIndex();
 
+  // get size from tensor image 
   ImageType::SizeType  size;
   size[0] = t.size(2);
   size[1] = t.size(3);
   size[2] = t.size(4);
+
+  auto size_itk = inputImage->GetLargestPossibleRegion().GetSize();
+  // sanity check of tensor and itk image should happen here
+  int tensorCounter = 2;
+  for (size_t d = 0; d < ImageType::ImageDimension; d++)
+  {
+    if (size_itk[d] != t.size(tensorCounter))
+    {
+      std::cerr << "ITK Image size and Tensor image size mismatch.\n";
+      return ImageType::New();
+    }
+    tensorCounter++;
+  }
 
   ImageType::RegionType region;
   region.SetSize(size);
@@ -95,72 +112,6 @@ ImageType::Pointer tensor2itk(torch::Tensor &t, ImageType::Pointer inputImage)
   return caster->GetOutput();
 }
 
-
-int main(int argc, const char* argv[]) {
-  int a, b, c;
-  if (argc != 4) {
-    std::cerr << "usage: automyo input jitmodel output\n";
-    return -1;
-  }
-
-  std::cout << "=========  jit start  =========\n";
-  // 1. load jit script model
-  std::cout << "Load script module: " << argv[2] << std::endl;
-  std::shared_ptr<torch::jit::script::Module> module = torch::jit::load(argv[2]);
-  module->to(at::kCUDA);
-
-  // assert(module != nullptr);
-  std::cout << "Load script module DONE" << std::endl;
-
-  // 2. load input image
-  const char* img_path = argv[1];
-  std::cout << "Load image: " << img_path << std::endl;
-
-  ReaderType::Pointer reader = ReaderType::New();
-
-  if (!img_path) {
-    std::cout << "Load input file error!" << std::endl;
-    return false;
-  }
-
-  reader->SetFileName(img_path);
-  reader->Update();
-
-  std::cout << "Load image DONE!" << std::endl;
-
-  ImageType::Pointer itk_img = reader->GetOutput();
-
-  torch::Tensor tensor_img;
-  if (!itk2tensor(itk_img, tensor_img)) {
-    std::cerr << "itk2tensor ERROR!" << std::endl;
-  }
-  else {
-    std::cout << "Convert array to tensor DONE!" << std::endl;
-  }
-
-  std::vector<torch::jit::IValue> inputs;
-  inputs.push_back(tensor_img);
-
-  // 3. predict by model
-  torch::Tensor y = module->forward(inputs).toTensor();
-  std::cout << "Inference DONE!" << std::endl;
-
-  // 4. save the result to file
-  torch::Tensor seg = y.gt(0.5);
-  // std::cout << seg << std::endl;
-
-  ImageType::Pointer out_itk_img = ImageType::New();
-  if (!tensor2itk(seg, out_itk_img)) {
-    std::cerr << "tensor2itk ERROR!" << std::endl;
-  }
-  else {
-    std::cout << "Convert tensor to itk DONE!" << std::endl;
-  }
-
-  std::cout << out_itk_img << std::endl;
-
-  return true;
-}
 
 int main(int argc, const char* argv[]) 
 {
