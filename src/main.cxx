@@ -3,16 +3,29 @@
 #include <iostream>
 #include <memory>
 
+#include "cbicaCmdParser.h"
+
+std::string inputImage, outputDirectory, trainedModelDirectory;
+
+float sigma = 0.5;
+
 int main(int argc, const char* argv[]) 
 {
-  if (argc != 2) {
-    std::cerr << "usage: PyTorchModelImportTemplate <path-to-exported-script-module>\n";
-    return -1;
-  }
+  auto parser = cbica::CmdParser(argc, argv);
+  parser.addRequiredParameter("m", "modelDir", cbica::Parameter::DIRECTORY, "Directory containing all required files for model", "The input trained model to be used");
+  parser.addRequiredParameter("i", "inputImage", cbica::Parameter::FILE, "NIfTI input", "The input image to be processed");
+  parser.addRequiredParameter("o", "outputDir", cbica::Parameter::DIRECTORY, "Dir with write access", "The output directory");
+  parser.addOptionalParameter("s", "sigma", cbica::Parameter::FLOAT, "0-1", "Some random parameter shown as example", "Defaults to " + std::to_string(sigma));
+
+  parser.getParameterValue("m", trainedModelDirectory);
+  parser.getParameterValue("i", inputImage);
+  parser.getParameterValue("o", outputDirectory);
 
   // Deserialize the ScriptModule from a file using torch::jit::load().
-  std::shared_ptr<torch::jit::script::Module> module = torch::jit::load(argv[1]);
+  auto module = torch::jit::load(trainedModelDirectory);
 
   assert(module != nullptr);
-  std::cout << "ok\n";
+  std::cout << "All okay with model...\n";
+
+
 }
