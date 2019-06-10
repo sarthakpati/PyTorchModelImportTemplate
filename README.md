@@ -1,5 +1,5 @@
 # PyTorchModelImportTemplate
-An example shoowing how to import a PyTorch model and use it using C++
+An example showing how to import a PyTorch model and use it using C++
 
 All code has been adopted from https://pytorch.org/tutorials/advanced/cpp_export.html
 
